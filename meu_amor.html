@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Para o Meu Amor 💖</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #2d1e26;
+      color: #ff69b4;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      position: relative;
+      z-index: 2;
+    }
+
+    #mainContent, #confirmation, #final {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      position: relative;
+    }
+
+    #mainContent.active, #confirmation.active, #final.active {
+      display: flex;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    #buttons {
+      display: flex;
+      gap: 20px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+      position: static;
+      height: auto;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #yes {
+      background-color: #ff69b4;
+      color: white;
+    }
+
+    #no {
+      background-color: #aaa;
+      color: white;
+      position: relative;
+    }
+
+    #fireworks {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    canvas#heartCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #daysCount {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    #heartbeat {
+      font-size: 1.5em;
+      color: red;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="heartCanvas"></canvas>
+  <canvas id="fireworks"></canvas>
+  <div class="container">
+    <div id="mainContent" class="active">
+      <h1>Quer saber o que vem depois?</h1>
+      <div id="buttons">
+        <button id="yes">Sim</button>
+        <button id="no">Não</button>
+      </div>
+    </div>
+    <div id="confirmation">
+      <h1>Tem certeza?</h1>
+      <div id="buttons">
+        <button id="yes2">Sim</button>
+        <button id="no2">Não</button>
+      </div>
+    </div>
+    <div id="final">
+      <h1 id="daysCount"></h1>
+      <p>e contando...</p>
+      <div id="heartbeat">💓</div>
+    </div>
+  </div>
+  <script>
+    const startDate = new Date("2024-12-15");
+    const daysCountEl = document.getElementById("daysCount");
+
+    function updateDays() {
+      const today = new Date();
+      const diffTime = today - startDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      daysCountEl.textContent = `Eu te amo há ${diffDays} dias`;
+    }
+
+    document.getElementById("yes").onclick = () => {
+      document.getElementById("mainContent").classList.remove("active");
+      document.getElementById("confirmation").classList.add("active");
+    };
+
+    document.getElementById("yes2").onclick = () => {
+      document.getElementById("confirmation").classList.remove("active");
+      document.getElementById("final").classList.add("active");
+      launchFireworks();
+      updateDays();
+      setInterval(updateDays, 1000 * 60 * 60); // atualiza uma vez por hora
+    };
+
+    function evade(button) {
+      const maxX = window.innerWidth - button.offsetWidth;
+      const maxY = window.innerHeight - button.offsetHeight;
+      button.style.position = "absolute";
+      button.style.left = Math.random() * maxX + "px";
+      button.style.top = Math.random() * maxY + "px";
+    }
+
+    document.getElementById("no").onmouseover = () => evade(document.getElementById("no"));
+    document.getElementById("no2").onmouseover = () => evade(document.getElementById("no2"));
+
+    // Corações
+    const heartCanvas = document.getElementById("heartCanvas");
+    const ctx = heartCanvas.getContext("2d");
+    heartCanvas.width = window.innerWidth;
+    heartCanvas.height = window.innerHeight;
+
+    const hearts = [];
+
+    function Heart(x, y, size, speed) {
+      this.x = x;
+      this.y = y;
+      this.size = size;
+      this.speed = speed;
+    }
+
+    Heart.prototype.draw = function () {
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.bezierCurveTo(this.x, this.y - this.size / 2, this.x - this.size, this.y - this.size / 2, this.x - this.size, this.y);
+      ctx.bezierCurveTo(this.x - this.size, this.y + this.size, this.x, this.y + this.size * 1.5, this.x, this.y + this.size * 2);
+      ctx.bezierCurveTo(this.x, this.y + this.size * 1.5, this.x + this.size, this.y + this.size, this.x + this.size, this.y);
+      ctx.bezierCurveTo(this.x + this.size, this.y - this.size / 2, this.x, this.y - this.size / 2, this.x, this.y);
+      ctx.fillStyle = "red";
+      ctx.fill();
+    };
+
+    Heart.prototype.update = function () {
+      this.y += this.speed;
+      if (this.y > heartCanvas.height) {
+        this.y = 0;
+        this.x = Math.random() * heartCanvas.width;
+      }
+      this.draw();
+    };
+
+    function initHearts() {
+      for (let i = 0; i < 50; i++) {
+        hearts.push(new Heart(Math.random() * heartCanvas.width, Math.random() * heartCanvas.height, 10 + Math.random() * 10, 0.5 + Math.random()));
+      }
+    }
+
+    function animateHearts() {
+      ctx.clearRect(0, 0, heartCanvas.width, heartCanvas.height);
+      hearts.forEach((heart) => heart.update());
+      requestAnimationFrame(animateHearts);
+    }
+
+    initHearts();
+    animateHearts();
+
+    // Fogos de artifício
+    function launchFireworks() {
+      const canvas = document.getElementById("fireworks");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+
+      function Particle(x, y, dx, dy, color) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+        this.color = color;
+        this.alpha = 1;
+      }
+
+      Particle.prototype.draw = function () {
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      };
+
+      Particle.prototype.update = function () {
+        this.x += this.dx;
+        this.y += this.dy;
+        this.dy += 0.02;
+        this.alpha -= 0.01;
+      };
+
+      function explode() {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height / 2;
+        const color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+
+        for (let i = 0; i < 100; i++) {
+          const angle = Math.random() * 2 * Math.PI;
+          const speed = Math.random() * 5;
+          particles.push(new Particle(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, color));
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p, index) => {
+          p.update();
+          if (p.alpha <= 0) {
+            particles.splice(index, 1);
+          } else {
+            p.draw();
+          }
+        });
+        requestAnimationFrame(animate);
+      }
+
+      setInterval(explode, 1000);
+      animate();
+    }
+  </script>
+</body>
+</html>
